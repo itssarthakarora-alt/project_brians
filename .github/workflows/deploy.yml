@@ -1,5 +1,6 @@
 # Pipeline 1 — Deploy everything on GitHub to GoDaddy cPanel
 # Trigger: every push to main/master, or manual run from the Actions tab.
+#hi
 name: Deploy to GoDaddy cPanel
 
 on:
