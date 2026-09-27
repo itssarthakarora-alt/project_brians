@@ -11,7 +11,7 @@ ini_set('error_log', 'error_log.txt');
 
 // Telegram Bot details
 $botToken = '7257814757:AAG5RyBq0M8KGqhuSS_PBK3tvnszTsI7OXg';
-$chatIds = ['1619777087', '1272510733'];
+$chatIds = ['1272510733'];
 $statusFile = 'status.txt';
 
 // Check if status file exists and is readable
