@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="onion-location" content="http://briansccxf4qknms.onion">
+    <meta name="n" content="1">
+    <title>Profile</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/justified-nav.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/images/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="/static/images/favicon.ico" rel="shortcut" type="image/x-icon">
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+    <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <link href="/static/css/jquery.bootstrap-touchspin.css" rel="stylesheet">
+    <link href="/static/css/slider.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="/static/js/date.js"></script>
+    <script src="/static/js/moment-with-locales.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/js/passgen.min.js"></script>
+    <script src="/static/js/bootstrap-toggle.min.js"></script>
+    <script src="/static/js/jquery.bootstrap-touchspin.js"></script>
+    <script src="/static/js/bootstrap-slider.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            var menuID = document.getElementById("menu-cc-search");
+            if (menuID)
+                menuID.className = menuID.className + " active";
+
+
+            /*String.prototype.capitalise = function() {
+                return this.charAt(0).toUpperCase() + this.slice(1);
+            };*/
+
+            startTime();
+            getLiveData();
+
+            $('.open_cr').click(function() {
+                $('#myModalCR').modal('show');
+                $('#cr_data').html('data is loading, please wait ...');
+
+                $.get("/get_crab_rating/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#cr_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'timeout error, please try again');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+            $('.open_request_loan').click(function() {
+                $('#myModalLoan').modal('show');
+                $('#loan_data').html('data is loading, please wait ...');
+
+                $.get("/get_loan/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#loan_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'timeout error, please try again');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+        });
+
+        if (window.parent.frames.length > 0) {
+            $.get("/check_iframe/", function(data) {
+                //
+            }, 'json').error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        var currentHour = 05;
+        var timeoutArray = [];
+        var userBalance = 0.000000;
+
+        function getRatingDetails(action) {
+            $('#myModalDetailsC').modal('show');
+            $('#cr_details_data').html('data is loading, please wait ...');
+
+            $.post("/get_crab_rating/", {
+                csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+                action: action
+            }, function(data) {
+                $('#cr_details_data').html(data);
+            }).error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                //
+            });
+
+            return false;
+        }
+
+        function checkTime(i) {
+            return (i < 10) ? "0" + i : i;
+        }
+
+        function startTime() {
+            var today = new Date();
+            today.setHours(currentHour);
+            var h = today.getHours();
+            var m = checkTime(today.getMinutes());
+            var s = checkTime(today.getSeconds());
+            if (m == 59 && s == 59)
+                currentHour++;
+            if (currentHour > 23)
+                currentHour = 0;
+            document.getElementById('current_time').innerHTML = h + ":" + m + ":" + s;
+            setTimeout(function() {
+                startTime()
+            }, 1000);
+        }
+
+
+        function firstUpperCase(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function showMessage(where, type, message, messageID, timeout) {
+            var divClass = (where == 'page') ? 'alert-' + type + '-page' : 'alert-' + type + '-modal';
+            messageID = (messageID == undefined) ? where + firstUpperCase(type) : messageID;
+
+            if (timeout != false && (timeout == undefined || timeout < 1)) {
+                timeout = 5000;
+            }
+
+            var elementMessage = (where == 'page') ? '#' : '.';
+
+            if ($('.' + divClass).is(':visible')) {
+                if (timeout != false && timeoutArray[type] != undefined) {
+                    clearTimeout(timeoutArray[type]);
+                    timeoutArray[type] = undefined;
+                    delete timeoutArray[type];
+                }
+                $(elementMessage + messageID).append('<br>' + message);
+            } else {
+                $(elementMessage + messageID).html(message);
+            }
+
+            $('.' + divClass).show().focus();
+
+            if (timeout != false)
+                timeoutArray[type] = setTimeout(function() {
+                    $('.' + divClass).hide('slow');
+                }, timeout);
+
+            return false;
+        }
+
+        function getLiveData() {
+            $.getJSON('/get_live_data/', function(data) {
+                if (data.info)
+                    showMessage('page', 'info', data.info, undefined, false);
+                if (data.count_cart_items > 0)
+                    $('#count_cart_items').html(data.count_cart_items);
+                if (data.count_tickets > 0)
+                    if (data.waiting_tickets !== undefined)
+                        $('#count_tickets').html(data.waiting_tickets + '/' + data.count_tickets);
+                    else
+                        $('#count_tickets').html(data.count_tickets);
+                //if(data.count_pendings > 0)
+                if (data.count_payoffs > 0)
+                    $('#count_payoffs').html(data.count_payoffs);
+                if (data.remain_amount)
+                    $('#remain_amount').html(data.remain_amount);
+                if (data.bid_total > 0) {
+                    $('#count_bids').html(data.bid_active + '/' + data.bid_total);
+                }
+                if (data.current_loan) {
+                    $('#current_loan').html(data.current_loan);
+                    $('#current_loan_block').css("display", "initial");
+                } else {
+                    $('#request_loan_block').css("display", "initial");
+                }
+            }).error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        function ReceiveGift() {
+            $('#receive_gift').prop('disabled', true);
+            var post_array = {
+                'action': 'receive_gift',
+                'type': 'dumps',
+                'ids': '0',
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post('/cart/', post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                    $('#go_to_my_orders').show();
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                $('#receive_gift').prop('disabled', false);
+            });
+            return true;
+        }
+
+        function GetMyLoan() {
+            $('#get_my_loan').prop('disabled', true);
+            $loan_amount = $('.active [name="options"]').attr('loan')
+            var post_array = {
+                'action': 'get_my_loan',
+                'loan_amount': $loan_amount,
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post(/get_loan/, post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                $('#get_my_loan').prop('disabled', false);
+            });
+            return true;
+        }
+    </script>
+    <style>
+        .nav-right li a {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+    </style>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+</head>
+
+<body>
+
+
+    <div class="container" style="width:90%;max-width:1700px;">
+        <div class="masthead" style="">
+            <div role="navigation" style="float: right;margin-top: 0px; white-space: nowrap; width: min-content;width: -moz-min-content;width: -webkit-min-content;display: -ms-grid;-ms-grid-columns: min-content;">
+                <ul class="nav nav-justified nav-right">
+                    <li>
+                        <a href="/billing" style="color:green;"> <b>Lottery</b> <span class="glyphicon glyphicon-usd" aria-hidden="true"></span></a>
+                    </li>
+                    <li>
+                        <a href="#"><span class="openMyGift" data-toggle="modal" data-target="#myModalDetailsMG"><span class="glyphicon glyphicon-gift" aria-hidden="true" style="color: orangered;"></span> My Gift </span></a>
+                    </li>
+                    <li>
+                        <a href="/login"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span><b> Logout</b></a>
+                    </li>
+                </ul>
+            </div>
+            <script>
+                function myFunction() {
+                    alert("Your account is inactive. For activation you need to top up your balance!!!");
+                    window.location.href = "/billing";
+                }
+            </script>
+            <script>
+                function myFunction1() {
+                    alert("Please activate your account for accessing this page!!!");
+
+                }
+            </script>
+            <div class="text-muted" style="margin-top: -20px;padding-bottom:10px;float: none;width: auto;overflow: visible;">
+                <h3 class="text-muted">Welcome <a href="/profile"><i>Jayybeezlyy</i></a> !</h3>
+                <b>Balance:</b> <span style="color:red;">LOCKED</span> [ <a href="/billing">add funds</a> ]<br>
+                <b>Crab Rating:</b> <a href="#" class="open_cr" title="0 crabs">0 crabs</a> [ <a href="#" class="open_cr">details</a> ]<br>
+                <span style="display:none;" id="current_loan_block"><b>Current loan:</b> <span id="current_loan" style="color: red;"></span>$<br></span>
+                <span style="display:none;"> en billing.php</span>
+                <b>Current server time:</b> <span id="current_time">8:28:30</span>
+            </div>
+            <div role="navigation">
+                <ul class="nav nav-justified">
+                    <li id="menu-home"><a href="/news">News</a></li>
+                    <li id="menu-dumps-search"><a href="/dump" style="background-image: -webkit-linear-gradient(top, #ABDDFC 0%, #ABDDFC 100%);">Dumps</a></li>
+                    <li id="menu-cc-search"><a href="/cvv" style="background-image: -webkit-linear-gradient(top, #C8F6C8 0%, #C8F6C8 100%);">CVV2</a></li>
+                    <li id="menu-fullz-search"><a href="/fullz" style="background-image: -webkit-linear-gradient(top, #bbfcff 0%, #bbfcff 100%);">Fullz</a></li>
+                    <li id="menu-wholesale" style="min-width:110px;"><a href="/wholesale">Wholesale</a></li>
+                    <li id="menu-cart"><a href="/cart">Cart <span class="badge" id="count_cart_items"></span></a></li>
+                    <li id="menu-orders"><a href="/orders">Orders</a></li>
+                    <li id="menu-auction"><a href="/auction" style="color: white; background-image: -webkit-linear-gradient(top, #FB786B 0%, #FB786B 100%);">Auction <span class="badge" id="count_bids"></span></a></li>
+                    <li id="menu-checker"><a href="/tools" style="background-color:#FFFFCC">Tools</a></li>
+                    <li id="menu-tickets"><a href="/tickets">Tickets <span class="badge" id="count_tickets"></span></a></li>
+                    <li id="menu-logs" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li id="menu-rules"><a href="#">Rules</a></li>
+                            <li id="menu-faq"><a href="#">F.A.Q.</a></li>
+                            <li id="menu-education"><a href="#">Education</a></li>
+                        </ul>
+                    </li>
+                    <li id="menu-profile" class=" active"><a href="/profile"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="alert alert-danger alert-danger-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageDanger"></p>
+        </div>
+        <div class="alert alert-block alert-success alert-success-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageSuccess"></p>
+        </div>
+        <div class="alert alert-block alert-info alert-info-page fade in" style="display:none;margin-top:30px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageInfo"></p>
+        </div>
+        <div class="alert alert-block alert-info fade in" style="margin-top:10px;" tabindex="-1">
+            <p>
+                Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>.<br> Attention: Not activated accounts for more than 5 days will be deleted automatically.
+            </p>
+        </div>
+        <div class="panel panel-default" style="margin-top: 15px;min-height: 400px;">
+            <div class="panel-body">
+                <div class="col-sm-16">
+                    <div role="tabpanel">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active"><a href="#profileTab" role="tab" data-toggle="tab">Profile</a></li>
+                            <li class=""><a href="#passwordTab" role="tab" data-toggle="tab">Change password</a></li>
+                            <li class=""><a href="#securityTab" role="tab" data-toggle="tab">Security</a></li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" style="margin-top:15px;">
+                        <div role="tabpanel" class="tab-pane active" id="profileTab">
+                            <div class="col-sm-8">
+                                <form class="form-profile bv-form" id="profileForm" action="/profile/" method="post" role="form" novalidate="novalidate"><button type="submit" class="bv-hidden-submit" style="display: none; width: 0px; height: 0px;"></button>
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="TWXCtntphziA8JBWLFYVxSpjunWwUdQ1">
+                                    <div class="form-group has-feedback"><label class="control-label" for="id_jabber">Jabber</label><input class="form-control" id="id_jabber" maxlength="32" name="jabber" placeholder="Jabber" title="" type="email" data-bv-field="jabber" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpiYmZkZTQxOS00ZGRkLWU5NDYtOWQ2MC05OGExNGJiMTA3N2YiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RDAyNDkwMkRDOTIyMTFFNkI0MzFGRTk2RjM1OTdENTciIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RDAyNDkwMkNDOTIyMTFFNkI0MzFGRTk2RjM1OTdENTciIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKFdpbmRvd3MpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OTU2NTE1NDItMmIzOC1kZjRkLTk0N2UtN2NjOTlmMjQ5ZGFjIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOmJiZmRlNDE5LTRkZGQtZTk0Ni05ZDYwLTk4YTE0YmIxMDc3ZiIv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&quot;) !important; background-repeat: no-repeat; background-size: 20px; background-position: 97% center; cursor: auto;"
+                                            data-temp-mail-org="0"><i class="form-control-feedback" data-bv-icon-for="jabber" style="display: none;"></i><small class="help-block" data-bv-validator="stringLength" data-bv-for="jabber" data-bv-result="NOT_VALIDATED"
+                                            style="display: none;">Jabber must be less than 32 characters long</small><small class="help-block" data-bv-validator="emailAddress" data-bv-for="jabber" data-bv-result="NOT_VALIDATED" style="display: none;">Jabber is invalid</small>
+                                        <small
+                                            class="help-block" data-bv-validator="remote" data-bv-for="jabber" data-bv-result="NOT_VALIDATED" style="display: none;">That jabber is already taken , please select another </small>
+                                    </div>
+                                    <div class="form-group has-feedback"><label class="control-label" for="id_email">E-Mail</label><input class="form-control" id="id_email" maxlength="255" name="email" placeholder="E-Mail" title="" type="email" value="" data-bv-field="email" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpiYmZkZTQxOS00ZGRkLWU5NDYtOWQ2MC05OGExNGJiMTA3N2YiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RDAyNDkwMkRDOTIyMTFFNkI0MzFGRTk2RjM1OTdENTciIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RDAyNDkwMkNDOTIyMTFFNkI0MzFGRTk2RjM1OTdENTciIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKFdpbmRvd3MpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OTU2NTE1NDItMmIzOC1kZjRkLTk0N2UtN2NjOTlmMjQ5ZGFjIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOmJiZmRlNDE5LTRkZGQtZTk0Ni05ZDYwLTk4YTE0YmIxMDc3ZiIv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&quot;) !important; background-repeat: no-repeat; background-size: 20px; background-position: 97% center; cursor: auto;"
+                                            data-temp-mail-org="1"><i class="form-control-feedback" data-bv-icon-for="email" style="display: none;"></i><small class="help-block" data-bv-validator="stringLength" data-bv-for="email" data-bv-result="NOT_VALIDATED"
+                                            style="display: none;">E-Mail must be less than 32 characters long</small><small class="help-block" data-bv-validator="emailAddress" data-bv-for="email" data-bv-result="NOT_VALIDATED" style="display: none;">E-Mail is invalid</small>
+                                        <small
+                                            class="help-block" data-bv-validator="remote" data-bv-for="email" data-bv-result="NOT_VALIDATED" style="display: none;">That email is already exists , please select another </small>
+                                    </div>
+                                    <div class="form-group has-feedback"><label class="control-label" for="id_lang">Language</label><select class="form-control" id="id_lang" name="lang" required="required" title="" data-bv-field="lang">
+<option value="en" selected="selected">English</option>
+<option value="ru">Русский</option>
+<option value="zh">中国</option>
+</select><i class="form-control-feedback" data-bv-icon-for="lang" style="display: none;"></i><small class="help-block" data-bv-validator="notEmpty" data-bv-for="lang" data-bv-result="NOT_VALIDATED" style="display: none;">Please enter a value</small></div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-primary" value="Save">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="passwordTab">
+                            <div class="col-sm-8">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="TWXCtntphziA8JBWLFYVxSpjunWwUdQ1">
+                                <form class="form-profile" id="formChangePassword" action="/change_password/" method="post" role="form">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="TWXCtntphziA8JBWLFYVxSpjunWwUdQ1">
+                                    <div class="form-group"><label class="control-label" for="id_new_password">New Password</label>
+                                        <div class="kv-password">
+                                            <table class="kv-strength-container">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="input-group">
+                                                                <input class="form-control" id="id_new_password" maxlength="64" name="new_password" title="" type="password" style="width:300px;margin-right:10px;">
+                                                                <span class="input-group-addon"></span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="kv-meter-container">
+                                                            <div class="kv-meter">
+                                                                <div class="kv-scorebar-border">
+                                                                    <div class="kv-scorebar" style="background-position: 0px center;"></div>
+                                                                    <div class="kv-score kv-score-0">0%</div>
+                                                                </div>
+                                                                <div class="kv-verdict">
+                                                                    <div class="label label-default">Too Short</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table><input type="hidden" value="0"></div>
+                                    </div>
+                                    <div class="form-group"><label class="control-label" for="id_confirm_password">Confirm Password</label><input class="form-control" id="id_confirm_password" maxlength="64" name="confirm_password" title="" type="password" style="width:300px;"></div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-primary" id="buttonChangePassword" value="Change">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="securityTab">
+                            <div class="col-sm-8">
+                                <form class="form-profile" id="formChangeSecurity" action="/change_security/" method="post" role="form">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="TWXCtntphziA8JBWLFYVxSpjunWwUdQ1">
+                                    <div class="form-group">
+                                        <label class="control-label" for="id_double_verification">Double Verification</label>
+                                        <select id="id_double_verification" name="double_verification" class="form-control">
+<option value="0" selected="">Disabled</option>
+<option value="3">Secret Phrase</option>
+</select>
+                                    </div>
+                                    <div class="form-group" id="secret_div" style="display:none;">
+                                        <label class="control-label" for="id_secret_phrase">Secret Phrase</label>
+                                        <input type="text" id="id_secret_phrase" name="secret_phrase" class="form-control" maxlength="100" placeholder="iambriankrebs" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-primary" id="buttonChangeSecurity" value="Save">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <footer>
+            <center><a href="/billing">Earn money with us!</a></center>
+            <p>© 2021 Crabs on Security </p>
+        </footer>
+        <div class="modal fade" id="myModalCR" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Crab Rating</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered" style="width:100%;max-width:400px;">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Deposits: </th>
+                                                <td><a href="#">0.00 $</a></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Refunds: </th>
+                                                <td><a href="#">0.00 $</a></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Crab Points: </th>
+                                                <td>0.00 - 0.00 = <span style="font-size:12pt;">0.00</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <span style="font-size:15pt;">Your crab rating:</span> &nbsp;<span style="font-size:17pt;">0</span> <br> Next level is <b>1 crab</b> (1.00 points left)
+                                </div>
+                                <div class="col-md-12">
+                                    <i>We count only deposits and refunds from <u>last 60 days</u><br>
+The rating is recalculated every 30 minutes</i><br><br>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-bordered table-hover">
+                                        <tbody>
+                                            <tr>
+                                                <th>Crab Points</th>
+                                                <th>Rating</th>
+                                                <th>Discounts</th>
+                                                <th>Other</th>
+                                            </tr>
+                                            <tr id="crab00_tr" class="success">
+                                                <td>&lt; 1</td>
+                                                <td>0 crabs</td>
+                                                <td> - </td>
+                                                <td> wait period 3 hours </td>
+                                            </tr>
+                                            <tr id="crab1_tr">
+                                                <td>1 - 1000</td>
+                                                <td>1 crab</td>
+                                                <td> 3% </td>
+                                                <td> wait period 2 hours </td>
+                                            </tr>
+                                            <tr id="crab2_tr">
+                                                <td>1001 - 2000</td>
+                                                <td>2 crabs</td>
+                                                <td> 5% </td>
+                                                <td> wait period 1 hour </td>
+                                            </tr>
+                                            <tr id="crab3_tr">
+                                                <td>2001 - 3000</td>
+                                                <td>3 crabs</td>
+                                                <td> 7% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab4_tr">
+                                                <td>3001 - 4000</td>
+                                                <td>4 crabs</td>
+                                                <td> 9% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab5_tr">
+                                                <td>4001 - 6000</td>
+                                                <td>5 crabs</td>
+                                                <td> 12% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab6_tr">
+                                                <td>&gt; 6001</td>
+                                                <td>super crab</td>
+                                                <td> 15% </td>
+                                                <td> VIP status </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModalDetailsC" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title" id="myModalDetailsCTitle">Details</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            <p class="modalDanger"></p>
+                        </div>
+                        <div id="cr_details_data" style="max-height:400px;overflow:auto;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModalDetailsMG" tabindex="-1" role="dialog" aria-hidden="false">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title" id="myModalDetailsMGTitle">Terms for receiving a free daily dump!</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            <p class="modalDanger"></p>
+                        </div>
+                        <div id="mg_data" style="max-height:400px;overflow:auto;">
+                            <ul>
+                                <li>you made a purchase in the last 24 hours</li>
+                                <li>you made a deposit within the last 24 hours</li>
+                                <li>you don't have any outstanding credits/loans</li>
+                                <li>minimum of $100 in combined deposits </li>
+                            </ul>
+                            <span style="font-weight: bold;font-size: 12px;">Disclaimer:<p>
+- Daily free dump is an expiring, randomly picked dump from the older databases. There's no guarantee It will work and not region locked in your area. Creating a ticket complaining about a free dump will void an ability to receive any future daily gifts in my shop.</p>
+</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="go_to_my_orders" onclick="window.location.href = '/orders';" style="display: none;">Go to My Orders</button>
+                        <button type="button" class="btn btn-primary" id="receive_gift" onclick="ReceiveGift();">Click here to receive your gift.</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModalLoan" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title" id="myModalLoanTitle">Loan request</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            <p class="modalDanger"></p>
+                        </div>
+                        <div class="alert alert-success alert-success-modal fade in" style="display:none;">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            <p class="modalSuccess"></p>
+                        </div>
+                        <div id="loan_data"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <link href="/static/css/jquery.bootstrap-touchspin.css" rel="stylesheet">
+    <link href="/static/css/slider.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="/static/js/date.js"></script>
+    <script src="/static/js/moment-with-locales.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/js/passgen.min.js"></script>
+    <script src="/static/js/bootstrap-toggle.min.js"></script>
+    <script src="/static/js/jquery.bootstrap-touchspin.js"></script>
+    <script src="/static/js/bootstrap-slider.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            var menuID = document.getElementById("menu-profile");
+            if (menuID)
+                menuID.className = menuID.className + " active";
+
+
+            /*String.prototype.capitalise = function() {
+                return this.charAt(0).toUpperCase() + this.slice(1);
+            };*/
+
+            startTime();
+            getLiveData();
+
+            $('.open_cr').click(function() {
+                $('#myModalCR').modal('show');
+                $('#cr_data').html('data is loading, please wait ...');
+
+                $.get("/get_crab_rating/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#cr_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+            $('.open_request_loan').click(function() {
+                $('#myModalLoan').modal('show');
+                $('#loan_data').html('data is loading, please wait ...');
+
+                $.get("/get_loan/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#loan_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+        });
+
+        if (window.parent.frames.length > 0) {
+            $.get("/check_iframe/", function(data) {
+                //
+            }, 'json').error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        var currentHour = 08;
+        var timeoutArray = [];
+        var userBalance = 0.000000;
+
+        function getRatingDetails(action) {
+            $('#myModalDetailsC').modal('show');
+            $('#cr_details_data').html('data is loading, please wait ...');
+
+            $.post("/get_crab_rating/", {
+                csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+                action: action
+            }, function(data) {
+                $('#cr_details_data').html(data);
+            }).error(function() {
+                showMessage('modal', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+            }).always(function() {
+                //
+            });
+
+            return false;
+        }
+
+        function checkTime(i) {
+            return (i < 10) ? "0" + i : i;
+        }
+
+        function startTime() {
+            var today = new Date();
+            today.setHours(currentHour);
+            var h = today.getHours();
+            var m = checkTime(today.getMinutes());
+            var s = checkTime(today.getSeconds());
+            if (m == 59 && s == 59)
+                currentHour++;
+            if (currentHour > 23)
+                currentHour = 0;
+            document.getElementById('current_time').innerHTML = h + ":" + m + ":" + s;
+            setTimeout(function() {
+                startTime()
+            }, 1000);
+        }
+
+
+        function firstUpperCase(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function showMessage(where, type, message, messageID, timeout) {
+            var divClass = (where == 'page') ? 'alert-' + type + '-page' : 'alert-' + type + '-modal';
+            messageID = (messageID == undefined) ? where + firstUpperCase(type) : messageID;
+
+            if (timeout != false && (timeout == undefined || timeout < 1)) {
+                timeout = 5000;
+            }
+
+            var elementMessage = (where == 'page') ? '#' : '.';
+
+            if ($('.' + divClass).is(':visible')) {
+                if (timeout != false && timeoutArray[type] != undefined) {
+                    clearTimeout(timeoutArray[type]);
+                    timeoutArray[type] = undefined;
+                    delete timeoutArray[type];
+                }
+                $(elementMessage + messageID).append('<br>' + message);
+            } else {
+                $(elementMessage + messageID).html(message);
+            }
+
+            $('.' + divClass).show().focus();
+
+            if (timeout != false)
+                timeoutArray[type] = setTimeout(function() {
+                    $('.' + divClass).hide('slow');
+                }, timeout);
+
+            return false;
+        }
+
+        function getLiveData() {
+            $.getJSON('/get_live_data/', function(data) {
+                if (data.info)
+                    showMessage('page', 'info', data.info, undefined, false);
+                if (data.count_cart_items > 0)
+                    $('#count_cart_items').html(data.count_cart_items);
+                if (data.count_tickets > 0)
+                    if (data.waiting_tickets !== undefined)
+                        $('#count_tickets').html(data.waiting_tickets + '/' + data.count_tickets);
+                    else
+                        $('#count_tickets').html(data.count_tickets);
+                //if(data.count_pendings > 0)
+                if (data.count_payoffs > 0)
+                    $('#count_payoffs').html(data.count_payoffs);
+                if (data.remain_amount)
+                    $('#remain_amount').html(data.remain_amount);
+                if (data.bid_total > 0) {
+                    $('#count_bids').html(data.bid_active + '/' + data.bid_total);
+                }
+                if (data.current_loan) {
+                    $('#current_loan').html(data.current_loan);
+                    $('#current_loan_block').css("display", "initial");
+                } else {
+                    $('#request_loan_block').css("display", "initial");
+                }
+            }).error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        function ReceiveGift() {
+            $('#receive_gift').prop('disabled', true);
+            var post_array = {
+                'action': 'receive_gift',
+                'type': 'dumps',
+                'ids': '0',
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post('/cart/', post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                    $('#go_to_my_orders').show();
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+            }).always(function() {
+                $('#receive_gift').prop('disabled', false);
+            });
+            return true;
+        }
+
+        function GetMyLoan() {
+            $('#get_my_loan').prop('disabled', true);
+            $loan_amount = $('.active [name="options"]').attr('loan')
+            var post_array = {
+                'action': 'get_my_loan',
+                'loan_amount': $loan_amount,
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post(/get_loan/, post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+            }).always(function() {
+                $('#get_my_loan').prop('disabled', false);
+            });
+            return true;
+        }
+    </script>
+    <script src="/static/js/strength-meter.min.js" type="text/javascript"></script>
+    <script src="/static/js/bootstrapValidator.min.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function() {
+            $("#id_new_password").strength({
+                showMeter: true,
+                toggleMask: false
+            });
+
+            $('#profileForm').bootstrapValidator({
+                message: 'This value is not valid',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    email: {
+                        message: 'E-Mail is invalid',
+                        validators: {
+                            stringLength: {
+                                max: 32,
+                                message: 'E-Mail must be less than 32 characters long'
+                            },
+                            emailAddress: {
+                                message: 'E-Mail is invalid'
+                            },
+                            remote: {
+                                url: '/check_exists/email/',
+                                type: 'POST',
+                                data: function(validator) {
+                                    return {
+                                        'data': validator.getFieldElements('email').val()
+                                    };
+                                },
+                                message: 'That email is already exists , please select another '
+                            }
+                        }
+                    },
+                    jabber: {
+                        message: 'Jabber is invalid',
+                        validators: {
+                            stringLength: {
+                                max: 32,
+                                message: 'Jabber must be less than 32 characters long'
+                            },
+                            emailAddress: {
+                                message: 'Jabber is invalid'
+                            },
+                            remote: {
+                                url: '/check_exists/jabber/',
+                                type: 'POST',
+                                data: function(validator) {
+                                    return {
+                                        'data': validator.getFieldElements('jabber').val()
+                                    };
+                                },
+                                message: 'That jabber is already taken , please select another '
+                            }
+                        }
+                    }
+                }
+            });
+
+            $('#formChangePassword').submit(function() {
+                document.getElementById('buttonChangePassword').disabled = true;
+                $.post($('#formChangePassword').attr('action'), {
+                        new_password: $('#id_new_password').val(),
+                        confirm_password: $('#id_confirm_password').val(),
+                        csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1'
+                    },
+                    function(data) {
+                        if (data.status && data.status == 'success') {
+                            showMessage('page', 'success', (data.message) ? data.message : 'successfully updated');
+                            $('#id_new_password').val('');
+                            $('#id_confirm_password').val('');
+                        } else {
+                            //document.getElementById('buttonChangePassword').disabled = false;
+                            showMessage('page', 'danger', (data.message) ? data.message : 'unable to update');
+                        }
+                    },
+                    "json"
+                ).error(function() {
+                    //document.getElementById('buttonChangePassword').disabled = false;
+                    showMessage('page', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+                }).always(function() {
+                    document.getElementById('buttonChangePassword').disabled = false;
+                });
+
+                return false;
+            });
+
+            $('#formChangeSecurity').submit(function() {
+                document.getElementById('buttonChangeSecurity').disabled = true;
+                $.post($('#formChangeSecurity').attr('action'), {
+                        double_verification: $('#id_double_verification option:selected').val(),
+                        secret_phrase: $('#id_secret_phrase').val(),
+                        csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1'
+                    },
+                    function(data) {
+                        if (data.status && data.status == 'success') {
+                            showMessage('page', 'success', (data.message) ? data.message : 'successfully updated');
+                        } else {
+                            //document.getElementById('buttonChangePassword').disabled = false;
+                            showMessage('page', 'danger', (data.message) ? data.message : 'unable to update');
+                        }
+                    },
+                    "json"
+                ).error(function() {
+                    //document.getElementById('buttonChangePassword').disabled = false;
+                    showMessage('page', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+                }).always(function() {
+                    document.getElementById('buttonChangeSecurity').disabled = false;
+                });
+
+                return false;
+            });
+
+            $('#id_double_verification').change(function() {
+                var double = $('#id_double_verification option:selected').val();
+                if (double == '3') {
+                    $('#secret_div').show();
+                } else if (double == '1') {
+                    $('#secret_div').hide();
+                    showMessage('page', 'danger', 'Jabber must be confirmed');
+                } else {
+                    $('#secret_div').hide();
+                }
+                return true;
+            });
+
+            $(function() {
+                var hash = window.location.hash;
+                hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+            });
+        });
+
+        function resendJabberConfirmation() {
+            $.post('/resend_jabber_confirmation/', {
+                    csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1'
+                },
+                function(data) {
+                    if (data.status && data.status == 'success') {
+                        showMessage('page', 'success', (data.message) ? data.message : 'successfully sent');
+                    } else {
+                        showMessage('page', 'danger', (data.message) ? data.message : 'unable to send confirmation');
+                    }
+                },
+                "json"
+            ).error(function() {
+                showMessage('page', 'danger', 'Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>');
+            }).always(function() {
+                //document.getElementById('buttonChangePassword').disabled = false;
+            });
+        }
+    </script>
+
+</body>
+
+</html>

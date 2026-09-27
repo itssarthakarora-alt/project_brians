@@ -1,0 +1,10 @@
+# Existing rules
+RewriteEngine on
+ErrorDocument 404 /404.html
+
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.brianscrabs\.de$
+RewriteRule ^(.*)$ https://brianscrabs.de/$1 [R=301,L]
+RewriteRule ^index\.html$ https://brianscrabs.de/ [R=301,L]
+
+
