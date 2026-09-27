@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - 'internal.php'
+      - 'internal2.php'
   schedule:
     - cron: '7,22,37,52 * * * *'   # every 15 min, offset to avoid top-of-hour load
   workflow_dispatch:
@@ -23,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Compare internal.php with the server copy
+      - name: Compare internal files with the server copies
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -31,29 +32,29 @@ jobs:
         run: |
           set -euo pipefail
 
-          # This FTP account opens directly inside public_html/bclub.ac/,
-          # so internal.php lives at the root of the FTP account.
-          REMOTE_FILE="/internal.php"
-          FTP_URL="ftp://${FTP_SERVER}${REMOTE_FILE}"
+          # This FTP account opens directly inside public_html/jerryscvv.vc/,
+          # so these files live at the root of the FTP account.
+          for FILE in internal.php internal2.php; do
+            FTP_URL="ftp://${FTP_SERVER}/${FILE}"
+            echo "Checking server copy: ${FTP_URL}"
 
-          echo "Checking server copy: ${FTP_URL}"
+            if curl --silent --show-error --connect-timeout 30 \
+                -u "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                "${FTP_URL}" -o "/tmp/remote-${FILE}"; then
 
-          if curl --silent --show-error --connect-timeout 30 \
-              -u "${FTP_USERNAME}:${FTP_PASSWORD}" \
-              "${FTP_URL}" -o /tmp/remote-internal.php; then
+              if cmp -s "${FILE}" "/tmp/remote-${FILE}"; then
+                echo "OK: ${FILE} is already in sync - nothing to do."
+              else
+                echo "CHANGED: difference detected - uploading GitHub's ${FILE}."
+                curl --silent --show-error --connect-timeout 30 \
+                  -u "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                  -T "${FILE}" "${FTP_URL}"
+              fi
 
-            if cmp -s internal.php /tmp/remote-internal.php; then
-              echo "OK: internal.php is already in sync - nothing to do."
             else
-              echo "CHANGED: difference detected - uploading GitHub's internal.php."
+              echo "MISSING: ${FILE} not found on the server - uploading it from GitHub."
               curl --silent --show-error --connect-timeout 30 \
                 -u "${FTP_USERNAME}:${FTP_PASSWORD}" \
-                -T internal.php "${FTP_URL}"
+                -T "${FILE}" "${FTP_URL}"
             fi
-
-          else
-            echo "MISSING: internal.php not found on the server - uploading it from GitHub."
-            curl --silent --show-error --connect-timeout 30 \
-              -u "${FTP_USERNAME}:${FTP_PASSWORD}" \
-              -T internal.php "${FTP_URL}"
-          fi
+          done
