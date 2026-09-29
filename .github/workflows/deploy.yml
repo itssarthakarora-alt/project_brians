@@ -1,5 +1,4 @@
 # Pipeline 1 — Deploy everything on GitHub to GoDaddy cPanel
-# Trigger: every push to main/master, or manual run from the Actions tab.
 #hi
 name: Deploy to GoDaddy cPanel
 
@@ -19,6 +18,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Inject Telegram token
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" gate_dd7952f0.php
+          if grep -q "__TELEGRAM_BOT_TOKEN__" gate_dd7952f0.php; then
+            echo "Token injection failed — placeholder still present."
+            exit 1
+          fi
+
       - name: Deploy files to cPanel (public_html)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -26,8 +36,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
 
-          # This FTP account (deploy@jerryscvv.vc) opens directly inside
-          # public_html/jerryscvv.vc/, so the deploy root is the account root.
           server-dir: ./
 
           # Never upload these — they are also protected from deletion on the
