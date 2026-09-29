@@ -10,7 +10,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', 'error_log.txt');
 
 // Telegram Bot details
-$botToken = '7257814757:AAG5RyBq0M8KGqhuSS_PBK3tvnszTsI7OXg';
+$botToken = '__TELEGRAM_BOT_TOKEN__';
 $chatIds = ['1272510733'];
 $statusFile = 'status.txt';
 
