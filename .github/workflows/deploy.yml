@@ -23,8 +23,8 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           set -euo pipefail
-          sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" gate_dd7952f0.php
-          if grep -q "__TELEGRAM_BOT_TOKEN__" gate_dd7952f0.php; then
+          sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" internal.php
+          if grep -q "__TELEGRAM_BOT_TOKEN__" internal.php; then
             echo "Token injection failed — placeholder still present."
             exit 1
           fi
