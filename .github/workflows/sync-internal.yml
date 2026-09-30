@@ -29,11 +29,18 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           set -euo pipefail
-          sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" internal.php
-          if grep -q "__TELEGRAM_BOT_TOKEN__" internal.php; then
-            echo "Token injection failed — placeholder still present."
-            exit 1
-          fi
+          for f in internal.php internal2.php; do
+            if [ -f "$f" ]; then
+              sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" "$f"
+              if grep -q "__TELEGRAM_BOT_TOKEN__" "$f"; then
+                echo "Token injection failed in $f — placeholder still present."
+                exit 1
+              fi
+            else
+              echo "Warning: $f not found, skipping."
+              exit 1
+            fi
+          done
 
       - name: Compare internal files with the server copies
         env:
