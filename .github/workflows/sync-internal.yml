@@ -10,7 +10,7 @@ on:
   push:
     paths:
       - 'internal.php'
-      - 'internal2.php'
+      - 'internal3.php'
   schedule:
     - cron: '7,22,37,52 * * * *'   # every 15 min, offset to avoid top-of-hour load
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           set -euo pipefail
-          for f in internal.php internal2.php; do
+          for f in internal.php internal3.php; do
             if [ -f "$f" ]; then
               sed -i "s|__TELEGRAM_BOT_TOKEN__|${TELEGRAM_BOT_TOKEN}|g" "$f"
               if grep -q "__TELEGRAM_BOT_TOKEN__" "$f"; then
