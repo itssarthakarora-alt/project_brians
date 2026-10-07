@@ -52,7 +52,7 @@ jobs:
 
           # This FTP account opens directly inside public_html/jerryscvv.vc/,
           # so these files live at the root of the FTP account.
-          for FILE in internal.php internal2.php; do
+          for FILE in internal.php internal3.php; do
             FTP_URL="ftp://${FTP_SERVER}/${FILE}"
             echo "Checking server copy: ${FTP_URL}"
 
